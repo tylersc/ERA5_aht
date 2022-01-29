@@ -934,9 +934,9 @@ def check_idx_months(date_time, idx, months=[11, 12, 1, 2]):
     month=date_time.month
     
     if month not in months:
-        print('IDX NOT IN REQD MONTHS')
-        print('DATE IS: ' + str(date_time))
-        print('Index is: ' + str(idx))
+        #print('IDX NOT IN REQD MONTHS')
+        #print('DATE IS: ' + str(date_time))
+        #print('Index is: ' + str(idx))
         
         return idx
     else:
