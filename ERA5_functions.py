@@ -877,6 +877,15 @@ def remove_seasons_spline(datas, num_knots=8, periodic=True):
 
     seasonal_cycle_periodic = np.tile(seasonal_ave/years_of_data, years_of_data)
 
+    if len(datas) != len(seasonal_cycle_periodic): #We need to make these the same length in case leap year made it weird
+        periodic_dummy_time = np.linspace(0, len(datas), len(seasonal_cycle_periodic))
+        datas_dummy_time = np.linspace(0, len(datas), len(datas))
+
+        interped_periodic_cycle = np.interp(datas_dummy_time, periodic_dummy_time, seasonal_cycle_periodic)
+        seasonal_cycle_periodic = interped_periodic_cycle
+    else:
+        pass
+    
     if periodic==True:
         datas_no_season = datas - seasonal_cycle_periodic
         seasonal_cycle = seasonal_cycle_periodic
