@@ -27,6 +27,8 @@ grab_temp_sphum_data - Creates a time-series of zonal-mean temp/sphum before and
 find_nearest - Given an array and a value, returns the element of the aray closest to that value and its index
 convert_to_xarray - Works with time_selector to create xarray datasets of the data for a particular time
 time_selector - Accepts ERA5 data and some info on the time of interest and returns numpy arrays of data for that time.
+decorr_length_scales - Accepts AHT data at one latitude and returns info on zonal-decorrelation length scale.
+plot_hist_and_gauss - Takes data and an axis and plots a histogram and Gaussian fit of the data
 '''
 
 import xarray as xr
@@ -43,6 +45,7 @@ from scipy import interpolate
 import scipy.io as io
 import pandas as pd
 import datetime as dt
+import math
 
 
 #Constants
@@ -1284,3 +1287,96 @@ def find_nearest(array, value):
     
     out_value = array[idx]
     return out_value, idx
+
+
+def decorr_length_scale(datas):
+    '''Accepts AHT data at one latitude and returns info on zonal-decorrelation length scale.
+    
+    Args:
+        -data(array): Array of values of AHT at one latitude
+        
+    Outputs:
+        -decorrs(array): Decorrelation length scale at each longitude
+        -sum_corr_coefs(array): Average correlation with longitude
+    '''
+    #Find the correlation coefficients for each longitude with each other longitude
+    corr_coefs = np.empty((720, 720))
+    for i in range(720):
+        for j in range(720):
+            corr_coefs[i,j] = np.corrcoef(datas[:,i], datas[:,j])[0,1]
+            
+    #Now the messy part
+    #We're going to basically put them all onto the same grid, so the longitude of interest
+    #is at the center of the array
+    #Then we can average them together too if we want
+    dummy_corr_coefs = np.zeros((720, 720))
+    decorrs = np.zeros(720)
+    sum_corr_coefs = np.zeros(720)
+    
+    for i in range(720):
+        corr_coefs_point = corr_coefs[i,:]
+
+        if i<360:
+            dummy_corr_coefs[i,360-i:360] = corr_coefs_point[:i]
+            dummy_corr_coefs[i,360:] = corr_coefs_point[i:360+i]
+            dummy_corr_coefs[i,:360-i] = corr_coefs_point[i-360:]
+
+        elif i>360:
+            dummy_corr_coefs[i,:360] = corr_coefs_point[i-360:i]
+            dummy_corr_coefs[i,360:360-i] = corr_coefs_point[i:]
+            dummy_corr_coefs[i,360-i:] = corr_coefs_point[:i-360]
+
+
+        elif i==360:
+            dummy_corr_coefs[i,:] = corr_coefs_point
+        else:
+            print('Problem!!!')
+
+        sum_corr_coefs += dummy_corr_coefs[i,:]
+        
+        #Find when the value drops below 1/e
+        decorrs_end1 = find_nearest(dummy_corr_coefs[i,360:], 1/math.e)[1] + 360
+        decorrs_end2 = find_nearest(dummy_corr_coefs[i,:360], 1/math.e)[1]
+
+        idx_diff = (abs(decorrs_end1 - 360) + abs(decorrs_end2 - 360)) / 2
+
+        decorrs[i] = idx_diff
+        
+        ave_corr_coefs = sum_corr_coefs / 720
+        
+    return decorrs, ave_corr_coefs
+
+
+def plot_hist_and_gauss(axs, data, which_color, which_bins=60, scale_up=1, label=''):
+    '''Takes data and an axis and plots a histogram and Gaussian fit of the data
+    
+    Args:
+        -axs(matplotlib axis): Axis on which to plot things
+        -data(array-like): Array of data to plot
+        -which_color(str): Color to plot the data in
+        -which_bins(int or array, default=60): Number of bins or the bins for the histograms
+        -scale_up(int or float, default=1): Increase magnitude of data plotted
+        -label(str): Label for the data
+    
+    Outputs:
+        -Plots things
+    '''
+    
+    # Bin it
+    #Which bins can either be an int (# of bins) or the bins themselves
+    n_bins, bin_edges = np.histogram(data, which_bins) 
+    # Normalize it, so that every bins value gives the probability of that bin
+    bin_probability = n_bins/float(n_bins.sum())
+    # Get the mid points of every bin
+    bin_middles = (bin_edges[1:]+bin_edges[:-1])/2.
+    # Compute the bin-width
+    bin_width = bin_edges[1]-bin_edges[0]
+    # Plot the histogram as a bar plot
+    axs.bar(bin_middles, scale_up * bin_probability, width=bin_width,
+            color=which_color, alpha=0.3)
+
+    # Fit to normal distribution
+    (mu, sigma) = sc.norm.fit(data)
+    # The pdf should not normed anymore but scaled the same way as the data
+    gaus = sc.norm.pdf(bin_middles, mu, sigma) * bin_width
+    axs.plot(bin_middles, gaus * scale_up, color=which_color, linewidth=2, label=label)
