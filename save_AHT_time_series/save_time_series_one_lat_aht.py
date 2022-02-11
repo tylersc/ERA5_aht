@@ -2,9 +2,9 @@ import xarray as xr
 from glob import glob
 import numpy as np
 
-which_year = '1981'
-ddir = 'aht_calcs/' + which_year + '/'
-which_lat = -65
+which_year = '1979'
+ddir = '../aht_calcs/' + which_year + '/'
+which_lat = 70
 
 dfiles_00z = sorted(glob(ddir + which_year + '_00z*'))
 #mfds_00z = xr.open_mfdataset(dfiles_00z, parallel=True)
@@ -33,5 +33,5 @@ sorted_ds = all_ds.sortby('time')
 eddy_all_times = sorted_ds.eddy_tot_int.sel(latitude=which_lat, method='nearest').sum(['level'], skipna=True).values
 mmc_all_times = sorted_ds.mmc_tot_int.sel(latitude=which_lat, method='nearest').sum(['level'], skipna=True).values
 
-np.save('aht_time_series/one_lat/mmc_total_' + str(which_lat) + 'deg_all_times_' + which_year, mmc_all_times)
-np.save('aht_time_series/one_lat/eddy_total_' + str(which_lat) + 'deg_all_times_' + which_year, eddy_all_times)
+np.save('../aht_time_series/one_lat/mmc_total_' + str(which_lat) + 'deg_all_times_' + which_year, mmc_all_times)
+np.save('../aht_time_series/one_lat/eddy_total_' + str(which_lat) + 'deg_all_times_' + which_year, eddy_all_times)
