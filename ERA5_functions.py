@@ -1347,7 +1347,7 @@ def decorr_length_scale(datas):
     return decorrs, ave_corr_coefs
 
 
-def plot_hist_and_gauss(axs, data, which_color, which_bins=60, scale_up=1, label=''):
+def plot_hist_and_gauss(axs, data, which_color, which_bins=60, scale_up=1, label='', plot_gaus=True):
     '''Takes data and an axis and plots a histogram and Gaussian fit of the data
     
     Args:
@@ -1373,10 +1373,14 @@ def plot_hist_and_gauss(axs, data, which_color, which_bins=60, scale_up=1, label
     bin_width = bin_edges[1]-bin_edges[0]
     # Plot the histogram as a bar plot
     axs.bar(bin_middles, scale_up * bin_probability, width=bin_width,
-            color=which_color, alpha=0.3)
+            color=which_color, alpha=0.3, label=label)
 
     # Fit to normal distribution
     (mu, sigma) = sc.norm.fit(data)
     # The pdf should not normed anymore but scaled the same way as the data
     gaus = sc.norm.pdf(bin_middles, mu, sigma) * bin_width
-    axs.plot(bin_middles, gaus * scale_up, color=which_color, linewidth=2, label=label)
+    
+    if plot_gaus == True:
+        axs.plot(bin_middles, gaus * scale_up, color=which_color, linewidth=2)
+    else:
+        pass
