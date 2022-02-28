@@ -4,7 +4,7 @@ import numpy as np
 
 which_year = '1979'
 ddir = '../aht_calcs/' + which_year + '/'
-which_lat = 70
+which_lat = 40
 
 dfiles_00z = sorted(glob(ddir + which_year + '_00z*'))
 #mfds_00z = xr.open_mfdataset(dfiles_00z, parallel=True)

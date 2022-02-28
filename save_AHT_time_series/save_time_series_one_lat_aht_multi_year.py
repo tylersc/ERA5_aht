@@ -2,11 +2,11 @@ import xarray as xr
 from glob import glob
 import numpy as np
 
-for year in range(1982, 2019, 1):
+for year in range(1985, 2019, 1):
     which_year = str(year)
     print(which_year)
     ddir = '../aht_calcs/' + which_year + '/'
-    which_lat = 60
+    which_lat = 40
 
     dfiles_00z = sorted(glob(ddir + which_year + '_00z*'))
     #mfds_00z = xr.open_mfdataset(dfiles_00z, parallel=True)
