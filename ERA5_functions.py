@@ -958,8 +958,8 @@ def get_ndjf_data(input_array):
     '''Given an array of timeseries AHT data, returns only the DJF parts of the time series
     '''
     
-    #time_range = pd.date_range('1979-01-01', '2018-12-31 18:00:00', freq='6H')
-    time_range = pd.date_range('1980-01-01', '2018-12-31 18:00:00', freq='6H')
+    time_range = pd.date_range('1979-01-01', '2018-12-31 18:00:00', freq='6H')
+    #time_range = pd.date_range('1980-01-01', '2018-12-31 18:00:00', freq='6H')
     
     valid_months = [11, 12, 1, 2]
     
