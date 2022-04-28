@@ -547,10 +547,10 @@ def aht_opener_helper(year, hour):
         -geo_pot(dataset): Dataset of geopotential for the year
     '''
     
-    vcomp = xr.open_dataset('/home/disk/eos9/ERA5/hourly_pl/' + str(hour) + '/' + str(year) + '.v.nc')
-    temp = xr.open_dataset('/home/disk/eos9/ERA5/hourly_pl/' + str(hour) + '/' + str(year) + '.t.nc')
-    sphum = xr.open_dataset('/home/disk/eos9/ERA5/hourly_pl/' + str(hour) + '/' + str(year) + '.q.nc')
-    geo_pot = xr.open_dataset('/home/disk/eos9/ERA5/hourly_pl/' + str(hour) + '/' + str(year) + '.z.nc')
+    vcomp = xr.open_dataset('/tdat/tylersc/era5_aht/era5_raw_data/' + str(hour) + '/' + str(year) + '.v_component_of_wind.nc')
+    temp = xr.open_dataset('/tdat/tylersc/era5_aht/era5_raw_data/' + str(hour) + '/' + str(year) + '.temperature.nc')
+    sphum = xr.open_dataset('/tdat/tylersc/era5_aht/era5_raw_data/' + str(hour) + '/' + str(year) + '.specific_humidity.nc')
+    geo_pot = xr.open_dataset('/tdat/tylersc/era5_aht/era5_raw_data/' + str(hour) + '/' + str(year) + '.geopotential.nc')
     
     return vcomp, temp, sphum, geo_pot
     
@@ -603,7 +603,7 @@ def aht_instant(datas_np, weight):
     
     #MMC
     
-    zon_norms = np.load('aht_calcs/zonal_norms.npy')
+    zon_norms = np.load('zonal_norms.npy')
     
     weight[np.isnan(weight)] = 0
 
@@ -925,7 +925,8 @@ def get_times_of_idx(idx):
         -date_time(datetime): Datetime date/time of the time index
     '''
     
-    time_range = pd.date_range('1979-01-01', '2018-12-31 18:00:00', freq='6H')
+    #time_range = pd.date_range('1979-01-01', '2018-12-31 18:00:00', freq='6H')
+    time_range = pd.date_range('1979-01-01', '2022-03-31 18:00:00', freq='6H')
     
     which_date = time_range[idx].date()
     time = time_range[idx].time()
@@ -955,13 +956,31 @@ def check_idx_months(date_time, idx, months=[11, 12, 1, 2]):
         return None
     
 def get_ndjf_data(input_array):
-    '''Given an array of timeseries AHT data, returns only the DJF parts of the time series
+    '''Given an array of timeseries AHT data, returns only the NDJF parts of the time series
     '''
     
     time_range = pd.date_range('1979-01-01', '2018-12-31 18:00:00', freq='6H')
     #time_range = pd.date_range('1980-01-01', '2018-12-31 18:00:00', freq='6H')
     
     valid_months = [11, 12, 1, 2]
+    
+    output_list = []
+    
+    for i in range(len(input_array)):
+        which_month = time_range[i].month
+        if which_month in valid_months:
+            output_list.append(input_array[i])
+            
+    return np.asarray(output_list)
+
+def get_djf_data(input_array):
+    '''Given an array of timeseries AHT data, returns only the DJF parts of the time series
+    '''
+    
+    time_range = pd.date_range('1979-01-01', '2018-12-31 18:00:00', freq='6H')
+    #time_range = pd.date_range('1980-01-01', '2018-12-31 18:00:00', freq='6H')
+    
+    valid_months = [12, 1, 2]
     
     output_list = []
     
@@ -1007,7 +1026,7 @@ def grab_era5_data(datetime_info, field):
     day_of_year = date.timetuple().tm_yday - 1 #So that the year starts at day 0
     time_of_day = str(time)[:2] #get only the 00z, 06z etc. part
     
-    file_str = '/home/disk/eos9/ERA5/hourly_pl/' + time_of_day + '/' + year + '.' + field  + '.nc'
+    file_str = '/tdat/tylersc/era5_aht/era5_raw_data/' + time_of_day + '/' + year + '.' + field  + '.nc'
     
     ds = xr.open_dataset(file_str)
 
@@ -1167,6 +1186,7 @@ def grab_aht_data(datetime_info):
     ds_time_sel = ds.sel(time=date_time)
     
     return ds_time_sel
+
     
     
 def grab_temp_sphum_data(datetime_info, hour_offset):
