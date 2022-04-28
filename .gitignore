@@ -1,7 +1,6 @@
-aht_time_series/era5_aht_time_series.nc
 aht_calcs/
 .ipynb_checkpoints/
 __pycache__/
 figures/
-aht_time_series/era5_aht_time_series_70deg.nc
+aht_time_series
 
