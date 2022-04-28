@@ -2,8 +2,8 @@ import xarray as xr
 from glob import glob
 import numpy as np
 
-which_year = '2018'
-ddir = 'aht_calcs/' + which_year + '/'
+which_year = '2022'
+ddir = '../aht_calcs/' + which_year + '/'
 
 dfiles_00z = sorted(glob(ddir + which_year + '_00z*'))
 #mfds_00z = xr.open_mfdataset(dfiles_00z, parallel=True)
@@ -32,5 +32,5 @@ sorted_ds = all_ds.sortby('time')
 eddy_all_times = sorted_ds.eddy_tot_int.mean(['longitude'], skipna=True).sum(['level'], skipna=True).values
 mmc_all_times = sorted_ds.mmc_tot_int.sum(['level'], skipna=True).values
 
-np.save('aht_time_series/mmc_all_times_' + which_year, mmc_all_times)
-np.save('aht_time_series/eddy_all_times_' + which_year, eddy_all_times)
+np.save('../aht_time_series/mmc_all_times_' + which_year, mmc_all_times)
+np.save('../aht_time_series/eddy_all_times_' + which_year, eddy_all_times)

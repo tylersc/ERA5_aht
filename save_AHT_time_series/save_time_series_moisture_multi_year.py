@@ -2,7 +2,7 @@ import xarray as xr
 from glob import glob
 import numpy as np
 
-years = ['2014', '2015', '2016', '2017', '2018']
+years = ['2019', '2020', '2021', '2022']
 
 for which_year in years:
     print(which_year)
