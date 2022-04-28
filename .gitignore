@@ -1,4 +1,5 @@
 aht_calcs/
+era5_raw_data/
 .ipynb_checkpoints/
 __pycache__/
 figures/
