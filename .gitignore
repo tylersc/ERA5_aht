@@ -1,5 +1,8 @@
 aht_calcs/
 aaron_aht_stuff/monthly_AHT/
+CERES_data.nc
+phd_projects/strm_functions.nc
+antarctic_event/CERES_antarctic_data.nc
 era5_raw_data/
 .ipynb_checkpoints/
 __pycache__/
