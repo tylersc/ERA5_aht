@@ -1352,18 +1352,23 @@ def decorr_length_scale(datas):
         else:
             print('Problem!!!')
 
+        #Add them together to create an average profile of decorrelation
         sum_corr_coefs += dummy_corr_coefs[i,:]
         
         #Find when the value drops below 1/e
         decorrs_end1 = find_nearest(dummy_corr_coefs[i,360:], 1/math.e)[1] + 360
         decorrs_end2 = find_nearest(dummy_corr_coefs[i,:360], 1/math.e)[1]
 
+        #Now convert that to #grid points and average both sides
         idx_diff = (abs(decorrs_end1 - 360) + abs(decorrs_end2 - 360)) / 2
 
         decorrs[i] = idx_diff
         
-        ave_corr_coefs = sum_corr_coefs / 720
+    ave_corr_coefs = sum_corr_coefs / 720
         
+    #Note, this returns decorrs in terms of grid points, not degrees
+    #Divide by 2 to get degrees
+    
     return decorrs, ave_corr_coefs
 
 
@@ -1404,3 +1409,53 @@ def plot_hist_and_gauss(axs, data, which_color, which_bins=60, scale_up=1, label
         axs.plot(bin_middles, gaus * scale_up, color=which_color, linewidth=2)
     else:
         pass
+    
+    
+    
+def calc_strm_funct(datas):
+    '''Calculates the meridional overturning streamfunction from monthly data in pressure coordinates by month
+    
+    Args:
+        datas(Xarray dataset)- An Xarray dataset from ERA5 output
+        
+    Output:
+        strm_fnct_data(Xarray DataArray) - Meridional streamfunction
+    '''
+    
+    time=datas.time
+    lats=datas.latitude
+    lons=datas.longitude
+    levels=datas.level
+    
+    zon_norms = np.load('../Calculate_AHT/zonal_norms.npy') #Dims (level, lat, lon)
+    
+    #Divide weights by g to get the units right
+    weights = np.load('../Calculate_AHT/aht_weights.npy')/ g #Dims (level, lat, lon)
+    weights[np.isnan(weights)] = 0
+    weights_zon_mean = np.nanmean(weights, axis=2) #Dims (level, lat)
+    
+    geom_multiplier = 2 * np.pi * a * np.cos(lats.values*np.pi/180) #Dims (lat)
+    
+    vcomp = datas.v #Dims (time, level, lat, lon)
+    vcomp_zon_mean = np.nansum(vcomp * zon_norms[None,:,:,:], axis=3) #Dims (time, level, lat)
+
+    mass_flux = vcomp_zon_mean * weights_zon_mean[None,:,:] * geom_multiplier[None,None,:] #Dims (time, level, lat)
+
+    vcomp_baro = np.nansum(mass_flux, axis=1) / ((geom_multiplier)*np.nansum(weights_zon_mean, axis=0))[None,:] #Dims (time, lat)
+
+    vcomp_corrected = vcomp_zon_mean - vcomp_baro[:, None,:] #Dims (time, level, lat)
+
+    mass_flux_corrected = vcomp_corrected * weights_zon_mean[None,:,:] * geom_multiplier[None,None,:] #Dims (time, level, lat)
+    mass_flux_corrected_reverse = mass_flux_corrected[:,::-1,:]
+    
+    strm_fnct = np.nancumsum(mass_flux_corrected, axis=1)
+
+    strm_fnct_da = xr.DataArray(data=strm_fnct,
+                                dims=['time', 'level', 'latitude'],
+                            coords=dict(
+                                time=time,
+                                latitude=lats,
+                                level=levels)
+        )
+        
+    return(strm_fnct_da)
