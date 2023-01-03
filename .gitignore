@@ -20,4 +20,15 @@ Local_eddy_aht_distributions.ipynb
 Local_extremes_trends.ipynb
 antarctica_trajectory_data.csv
 hadley_cell_strength_values.csv
+CMIP6/
+era_interim/00/
+era_interim/06/
+era_interim/12/
+era_interim/18/
+era_interim/monthly_data/
+JRA_aht/raw_data/
+JRA_aht/raw_monthly_data/
+merra_data/merra_precip/
+merra_data/raw_data/
 
+*.nfs*
