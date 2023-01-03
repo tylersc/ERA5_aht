@@ -32,3 +32,4 @@ merra_data/merra_precip/
 merra_data/raw_data/
 
 *.nfs*
+JRA_aht/rdamspw.txt
