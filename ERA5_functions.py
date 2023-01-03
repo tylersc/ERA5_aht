@@ -1459,3 +1459,79 @@ def calc_strm_funct(datas):
         )
         
     return(strm_fnct_da)
+
+
+def get_quantiles(field):
+    '''Calculates quantiles of data in an array and for a normal distribution and finds RMSE between the two.
+    
+    Args:
+        field (array) - Input array of data
+        
+    Output:
+        quantiles (array) - Quantiles of normal distribution with same length as array
+        field (array) - Same as input
+        RMSE (float) - RMSE between quantiles and field
+    '''
+    
+    field = np.sort(field.flatten())
+    
+    vals = np.zeros(len(field))
+    n = len(field)
+
+    for i in range(n):
+        if i == 0:
+            vals[i] = 1 - 0.5**(1/n)
+        elif i == (n-1):
+            vals[i] = 0.5**(1/n)
+        else:
+            vals[i] = ((i + 1) - 0.3175) / (n + 0.365)
+
+    quantiles = sc.norm.ppf(vals)
+    
+    rmse = np.mean(np.sqrt((field - quantiles)**2))
+    
+    return quantiles, field, rmse
+
+def compare_quantiles(field1, field2):
+    '''Calculates quantiles of data in an array vs. another array and finds RMSE between the two.
+    If arrays are different length it will interpolate the longer one onto the shorter ones quantiles.
+    
+    Args:
+        field1 (array) - Input array of data 1
+        field2 (array) - Input array of data 2
+        
+    Output:
+        field_return1 (array) - Data with same quantiles as field2_return
+        field_return2 (array) - Data with same quantiles as field1_return
+        RMSE (float) - RMSE between fields
+    '''
+    
+    field1 = np.sort(field1.flatten())
+    field2 = np.sort(field2.flatten())
+    
+    if len(field1) < len(field2):
+        field_short = field1
+        field_long = field2
+    elif len(field1) == len(field2):
+        rmse = np.mean(np.sqrt((field1 - field2)**2))
+        return field1, field2, rmse
+        
+    else:
+        field_short = field2
+        field_long = field1
+    
+    quants_to_interp = sc.mstats.rankdata(field_short) / len(field_short)
+    
+    field_long_interped = np.quantile(field_long, quants_to_interp)
+    
+    rmse = np.mean(np.sqrt((field_short - field_long_interped)**2))
+    
+    if len(field1) < len(field2):
+        field_return1 = field_short
+        field_return2 = field_long_interped
+        
+    else:
+        field_return1 = field_long_interped
+        field_return2 = field_short
+        
+    return field_return1, field_return2, rmse
