@@ -31,5 +31,10 @@ JRA_aht/raw_monthly_data/
 merra_data/merra_precip/
 merra_data/raw_data/
 
+TRMM/raw_data/
+*.m
+era5_data/
+*.png
+*.mat
 *.nfs*
 JRA_aht/rdamspw.txt

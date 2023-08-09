@@ -38,7 +38,7 @@ import numpy as np
 from scipy import signal
 import scipy.stats as sc
 import copy
-import metpy as mtp
+#import metpy as mtp
 from scipy import integrate
 from scipy import interpolate
 #0import xesmf as xe
@@ -1179,7 +1179,7 @@ def grab_aht_data(datetime_info):
     else:
         end_doy = rounded_doy + 9
     
-    file_str = 'aht_calcs/' + str(year) + '/' + str(year) + '_' + str(time_of_day) +'z_' + str(rounded_doy) + '_' + str(end_doy)
+    file_str = '../aht_calcs/' + str(year) + '/' + str(year) + '_' + str(time_of_day) +'z_' + str(rounded_doy) + '_' + str(end_doy)
         
     ds = xr.open_dataset(file_str)
 
